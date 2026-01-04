@@ -1,13 +1,14 @@
 # Proxmox Auto-Installer ISO Creator
 
-Automate the creation of customized Proxmox VE installation ISOs with unattended installation configurations. This tool generates bootable ISO images that automatically install and configure Proxmox VE with predefined settings.
+Automate the creation of customized Proxmox VE installation ISOs with unattended installation configurations. This tool generates bootable ISO images that automatically install and configure Proxmox VE with predefined settings. 
+Script runs on MacOs.
 
 ## Features
 
-- 🚀 **Automatic Version Detection** - Fetches the latest Proxmox VE ISO automatically
-- 🔐 **Secure Password Hashing** - Uses SHA-512 for root password encryption
+- 🚀 **Automatic Version Detection** - Fetches the latest Proxmox VE ISO 
+- 🔐 **Secure Password Hashing** - Uses SHA-512 for root password encryption in the answer file
 - 🖥️ **Multi-Node Support** - Generate multiple ISOs with sequential hostnames in one command
-- ✅ **Validation** - Verifies ISO integrity and answer file configuration before building
+- ✅ **Validation** - Verifies ISO integrity (partially) and answer file configuration before building
 - 🍎 **Apple Silicon Compatible** - Works on ARM64 Macs using platform emulation
 - 📦 **Zero Dependencies** - Uses Docker for all operations, no local package installation needed
 - 🎯 **Template-Based** - Easily customizable answer file templates
