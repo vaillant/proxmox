@@ -6,16 +6,15 @@ This file tracks potential improvements, features, and known issues for the Prox
 
 - [ ] Generated ISOs have generic names (could include version/date)
 - [ ] Add hint in the end how to dd copy the ISO file to the USB stick
-- [ ] Implement progress indicator for ISO download (currently silent)
-- [ ] Add checksum verification for downloaded ISOs
-- [ ] Create automated tests for answer file generation
-- [ ] Add `--dry-run` option to preview without generating ISOs
+- [ ] Improve readme to explain "installation" and copy to USB
 
 ## Lower priority
 
+- [ ] Add checksum verification for downloaded ISOs
 - [ ] Test and document Linux support
 - [ ] Test on Intel Macs
 - [ ] Cache Docker image to avoid repeated installs
+- [ ] Create automated tests for answer file generation
 
 ## Testing Checklist
 
