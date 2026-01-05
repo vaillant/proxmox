@@ -29,7 +29,7 @@ country = "at"
 fqdn = "proxmox-pc-$N$.home"
 mailto = "mail@no.invalid"
 timezone = "Europe/Vienna"
-root-password = "$PASSWD$"
+root-password-hashed = "$PASSWD$"
 
 [network]
 source = "from-dhcp"
