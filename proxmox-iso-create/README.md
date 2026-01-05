@@ -1,7 +1,7 @@
 # Proxmox Auto-Installer ISO Creator
 
-Automate the creation of customized Proxmox VE installation ISOs with unattended installation configurations. This tool generates bootable ISO images that automatically install and configure Proxmox VE with predefined settings. 
-Script runs on MacOs.
+Automate the creation of Proxmox VE installation ISOs for a complete cluster. This tool generates bootable ISO images that automatically install and configure Proxmox VE with predefined settings from an embedded answer file. 
+Script runs on MacOs and uses [proxmox-auto-install-assistant](https://pve.proxmox.com/wiki/Automated_Installation).
 
 ## Features
 
@@ -11,7 +11,7 @@ Script runs on MacOs.
 - ✅ **Validation** - Verifies ISO integrity (partially) and answer file configuration before building
 - 🍎 **Apple Silicon Compatible** - Works on ARM64 Macs using platform emulation
 - 📦 **Zero Dependencies** - Uses Docker for all operations, no local package installation needed
-- 🎯 **Template-Based** - Easily customizable answer file templates
+- 🎯 **Template-Based** - Customizable answer file templates
 
 ## Prerequisites
 
@@ -20,29 +20,74 @@ Script runs on MacOs.
 - **Internet Connection** - For downloading Proxmox ISOs (first run only)
 - `curl` or `wget` - Usually pre-installed on macOS
 
-## Quick Start
+
+## A Quick Start
 
 1. **Ensure Docker Desktop is running:**
    ```bash
    open -a Docker
    ```
 
-2. **Run the script:**
+2. **Get the Script**
+
+   Change to your working directory and execute
+   ```bash
+   curl -O https://raw.githubusercontent.com/vaillant/proxmox/main/proxmox-iso-create/proxmox-iso-create.sh
+   chmod +x proxmox-iso-create.sh
+   ```
+
+3. **Run the script:**
    ```bash
    ./proxmox-iso-create.sh 3
    ```
-   This creates 3 ISOs for nodes: `proxmox-pc-1`, `proxmox-pc-2`, `proxmox-pc-3`
 
-3. **Enter root password when prompted**
+4. **Enter root password when prompted**
 
-4. **Wait for generation** (~5 minutes on first run with ISO download)
+5. **Wait for generation** (~5 minutes on first run with ISO download)
 
-5. **Find your ISOs in `./output/`:**
+6. **Find your ISOs in `./output/`:**
    ```
-   ./output/proxmox-answer-node1.iso
-   ./output/proxmox-answer-node2.iso
-   ./output/proxmox-answer-node3.iso
+   ./output/proxmox-pc-1-pve-9.1-1.iso
+   ./output/proxmox-pc-2-pve-9.1-1.iso
+   ./output/proxmox-pc-3-pve-9.1-1.iso
    ```
+
+7. **Copy to USB**
+   Follow instructions printed by the script. Also see [Proxmox documentation on Installation Media](https://pve.proxmox.com/pve-docs/chapter-pve-installation.html#installation_prepare_media). 
+
+8. **Boot from USB:**
+
+   * Insert USB drive into target machine
+   * Boot from USB:
+      - Enter BIOS/UEFI (usually F2, F12, DEL, or ESC during boot)
+      - Select the USB drive as boot device
+      - Save and exit
+   * Automatic installation begins:
+      - The installer reads the answer file 
+      - Progress is shown on screen
+      - Installation takes ~5-10 minutes
+   * System reboots automatically when complete
+   * Remove USB drive after first reboot
+
+9. **Access Proxmox**
+
+   * Find the IP address:
+      - Check your DHCP server/router for the new device
+      - Or use: `arp -a | grep -i proxmox` from another machine on the network
+
+   * Login to web interface:
+      - URL: `https://<node-ip>:8006`
+      - Username: `root`
+      - Password: The password you entered during ISO creation
+
+   * First login notes:
+      - Browser will show security warning (self-signed certificate) - this is normal
+      - You may see a subscription notice - can be dismissed for home/test use
+
+10. **Proxmox configuration**
+
+   * Create the cluster, if you have more than one node.
+   * Install https://github.com/community-scripts/ProxmoxVE and execute [PVE post Install](https://community-scripts.github.io/ProxmoxVE/scripts?id=post-pve-install) to update repos.
 
 ## Usage
 
@@ -53,18 +98,6 @@ Generate ISO images for N nodes:
 ./proxmox-iso-create.sh <number_of_nodes>
 ```
 
-**Examples:**
-```bash
-# Single node
-./proxmox-iso-create.sh 1
-
-# Three nodes (cluster setup)
-./proxmox-iso-create.sh 3
-
-# Five nodes
-./proxmox-iso-create.sh 5
-```
-
 ### Using a Specific Proxmox Version
 
 By default, the script downloads the latest Proxmox VE version. To use a specific version:
@@ -73,27 +106,26 @@ By default, the script downloads the latest Proxmox VE version. To use a specifi
 PROXMOX_ISO_URL="https://enterprise.proxmox.com/iso/proxmox-ve_8.3-1.iso" ./proxmox-iso-create.sh 3
 ```
 
-Or edit the `PROXMOX_ISO_URL` variable at the top of the script.
+## Answer file generation
 
-### Non-Interactive Password (for automation)
+The script embeds an Proxmox answer file template. This is in TOML format, documented [here](https://pve.proxmox.com/wiki/Automated_Installation#Answer_File_Format_2). In many cases you need to make changes to reflect keyboard, DNS domain, netwokring or disk setup in your location. 
 
-```bash
-echo "your_password" | ./proxmox-iso-create.sh 3
-```
+The defaults in the script assume: 
+* DHCP (Note: make the IP static in your DHCP server, e.g. in Ubiquiti Unifi.)
+* Single NVME disk
+* Use ZFS with RAID0, i.e. no redundancy.
 
-## Configuration
-
-Edit the `DEFAULT_ANSWER_TEMPLATE` section in `proxmox-iso-create.sh` to customize:
+To customize the answer file, edit the `DEFAULT_ANSWER_TEMPLATE` section in `proxmox-iso-create.sh`:
 
 ```bash
 DEFAULT_ANSWER_TEMPLATE=\
 '[global]
-keyboard = "en-us"           # Keyboard layout
-country = "at"               # Country code
-fqdn = "proxmox-pc-$N$.home" # Hostname template ($N$ = node number)
-mailto = "mail@no.invalid"   # Email for notifications
-timezone = "Europe/Vienna"   # Timezone
-root-password = "$PASSWD$"   # Password (auto-filled)
+keyboard = "en-us"                  # Keyboard layout
+country = "at"                      # Country code
+fqdn = "proxmox-pc-$N$.home"        # Hostname template ($N$ = node number)
+mailto = "mail@no.invalid"          # Email for notifications
+timezone = "Europe/Vienna"          # Timezone
+root-password-hashed = "$PASSWD$"   # Password (auto-filled)
 
 [network]
 source = "from-dhcp"         # Use DHCP for networking
@@ -107,25 +139,43 @@ filter.DEVNAME = "/dev/nvme*"  # Disk filter (nvme, sd, etc.)
 ### Common Customizations
 
 **Change hostname pattern:**
-```bash
+```toml
 fqdn = "pve-$N$.example.com"  # Results in: pve-1.example.com, pve-2.example.com, ...
 ```
 
 **Use SCSI/SATA disks instead of NVMe:**
-```bash
+```toml
 filter.DEVNAME = "/dev/sd*"
 ```
 
 **Change timezone:**
-```bash
+```toml
 timezone = "America/New_York"
 ```
 
 **Change keyboard layout:**
-```bash
+```toml
 keyboard = "de"  # German
 keyboard = "fr"  # French
 keyboard = "en-gb"  # UK English
+```
+
+**Custom Disk Configuration:**
+E.g. for multiple SATA disks:
+```toml
+[disk-setup]
+filesystem = "zfs"
+zfs.raid = "raidz"  # RAID-Z (similar to RAID-5)
+disk_list = ["/dev/sda", "/dev/sdb", "/dev/sdc"]  # Specific disks
+```
+
+**Chnage to static IP Configuration**
+```toml
+[network]
+source = "from-dhcp"
+address = "192.168.1.100/24"
+gateway = "192.168.1.1"
+dns = "8.8.8.8"
 ```
 
 ## Output
@@ -136,38 +186,14 @@ Generated files are organized in the current directory:
 ./iso/                          # Downloaded Proxmox ISO (cached for reuse)
   └─ proxmox-ve_9.1-1.iso
 ./answers/                      # Generated answer files (TOML)
-  ├─ answer-node1.toml
-  ├─ answer-node2.toml
-  └─ answer-node3.toml
+  ├─ proxmox-pc-1.toml
+  ├─ proxmox-pc-2.toml
+  └─ proxmox-pc-3.toml
 ./output/                       # Final bootable ISO images
-  ├─ proxmox-answer-node1.iso  # ~1.7GB each
-  ├─ proxmox-answer-node2.iso
-  └─ proxmox-answer-node3.iso
+  ├─ proxmox-pc-1-pve-9.1-1.iso  # ~1.7GB each
+  ├─ proxmox-pc-2-pve-9.1-1.iso
+  └─ proxmox-pc-3-pve-9.1-1.iso
 ```
-
-### Using the Generated ISOs
-
-1. **Burn to USB** using tools like [balenaEtcher](https://www.balena.io/etcher/) or `dd`
-2. **Boot the target machine** from the USB/ISO
-3. **Wait for automatic installation** (no interaction needed)
-4. **System will reboot** when complete with Proxmox VE installed
-
-**Default login:**
-- Username: `root`
-- Password: The password you entered during ISO creation
-- Web interface: `https://<node-ip>:8006`
-
-## How It Works
-
-1. **Checks Docker** - Ensures Docker Desktop is running
-2. **Detects Latest Version** - Automatically fetches the newest Proxmox VE ISO URL
-3. **Downloads ISO** - Downloads and caches the ISO (~1.7GB, only on first run)
-4. **Validates ISO** - Checks file integrity and format
-5. **Hashes Password** - Securely hashes your password using SHA-512
-6. **Generates Configurations** - Creates answer files for each node
-7. **Validates Configurations** - Uses Proxmox tools to verify answer files
-8. **Builds ISOs** - Embeds configurations into bootable ISO images
-9. **Reports Success** - Shows generated ISOs with sizes
 
 ## Troubleshooting
 
@@ -205,28 +231,6 @@ The script uses x86_64 emulation which is slower than native. This is normal and
 
 ## Advanced Usage
 
-### Custom Disk Configuration
-
-For multiple disks or specific disk selection:
-
-```toml
-[disk-setup]
-filesystem = "zfs"
-zfs.raid = "raidz"  # RAID-Z (similar to RAID-5)
-disk_list = ["/dev/sda", "/dev/sdb", "/dev/sdc"]  # Specific disks
-```
-
-### Static IP Configuration
-
-Instead of DHCP:
-
-```toml
-[network]
-source = "from-dhcp"
-address = "192.168.1.100/24"
-gateway = "192.168.1.1"
-dns = "8.8.8.8"
-```
 
 ### Different Filesystem Types
 
