@@ -40,23 +40,20 @@ Script runs on MacOs and uses [proxmox-auto-install-assistant](https://pve.proxm
    ```bash
    ./proxmox-iso-create.sh 3
    ```
+   * Enter root password when prompted
+   * Wait for generation, ~5 minutes on first run with ISO download
 
-4. **Enter root password when prompted**
-
-5. **Wait for generation** (~5 minutes on first run with ISO download)
-
-6. **Find your ISOs in `./output/`:**
+   * Find your ISOs in `./output/`:
    ```
    ./output/proxmox-pc-1-pve-9.1-1.iso
    ./output/proxmox-pc-2-pve-9.1-1.iso
    ./output/proxmox-pc-3-pve-9.1-1.iso
    ```
 
-7. **Copy to USB**
+4. **Copy to USB**
    Follow instructions printed by the script. Also see [Proxmox documentation on Installation Media](https://pve.proxmox.com/pve-docs/chapter-pve-installation.html#installation_prepare_media). 
 
-8. **Boot from USB:**
-
+5. **Boot from USB:**
    * Insert USB drive into target machine
    * Boot from USB:
       - Enter BIOS/UEFI (usually F2, F12, DEL, or ESC during boot)
@@ -69,8 +66,7 @@ Script runs on MacOs and uses [proxmox-auto-install-assistant](https://pve.proxm
    * System reboots automatically when complete
    * Remove USB drive after first reboot
 
-9. **Access Proxmox**
-
+6. **Access Proxmox**
    * Find the IP address:
       - Check your DHCP server/router for the new device
       - Or use: `arp -a | grep -i proxmox` from another machine on the network
@@ -84,8 +80,7 @@ Script runs on MacOs and uses [proxmox-auto-install-assistant](https://pve.proxm
       - Browser will show security warning (self-signed certificate) - this is normal
       - You may see a subscription notice - can be dismissed for home/test use
 
-10. **Proxmox configuration**
-
+7. **Proxmox configuration**
    * Create the cluster, if you have more than one node.
    * Install https://github.com/community-scripts/ProxmoxVE and execute [PVE post Install](https://community-scripts.github.io/ProxmoxVE/scripts?id=post-pve-install) to update repos.
 
