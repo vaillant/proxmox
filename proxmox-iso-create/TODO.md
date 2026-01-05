@@ -4,7 +4,7 @@ This file tracks potential improvements, features, and known issues for the Prox
 
 ## High Priority
 
-- [ ] Generated ISOs have generic names (could include version/date)
+- [x] Generated ISOs have generic names (could include version/date)
 - [ ] Add hint in the end how to dd copy the ISO file to the USB stick
 - [ ] Improve readme to explain "installation" and copy to USB
 
