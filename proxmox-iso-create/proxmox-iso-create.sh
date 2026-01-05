@@ -207,18 +207,25 @@ if [ -z "$PASSWORD_HASH" ]; then
     exit 1
 fi
 
+# Extract version from ISO name for better output naming
+PROXMOX_VERSION=$(echo "$PROXMOX_ISO_NAME" | sed 's/proxmox-ve_\(.*\)\.iso/\1/')
+
 # Generate answer files
 log_info "Generating answer files for $NUM_NODES node(s)..."
 for i in $(seq 1 "$NUM_NODES"); do
-    ANSWER_FILE="${ANSWER_DIR}/answer-node${i}.toml"
-
     # Create answer file from template by replacing placeholders
-    echo "$DEFAULT_ANSWER_TEMPLATE" | \
+    ANSWER_CONTENT=$(echo "$DEFAULT_ANSWER_TEMPLATE" | \
         sed "s|\\\$N\\\$|$i|g" | \
-        sed "s|\\\$PASSWD\\\$|$PASSWORD_HASH|g" \
-        > "$ANSWER_FILE"
+        sed "s|\\\$PASSWD\\\$|$PASSWORD_HASH|g")
 
-    log_info "Created answer file: $ANSWER_FILE (node: $i)"
+    # Extract hostname from generated content for filename
+    HOSTNAME=$(echo "$ANSWER_CONTENT" | grep "^fqdn" | awk -F'"' '{print $2}' | awk -F. '{print $1}')
+    ANSWER_FILE="${ANSWER_DIR}/${HOSTNAME}.toml"
+
+    # Write answer file
+    echo "$ANSWER_CONTENT" > "$ANSWER_FILE"
+
+    log_info "Created answer file: $ANSWER_FILE"
 done
 
 # Run Docker container to validate and generate ISOs
@@ -229,6 +236,7 @@ docker run --rm -i \
     -v "$ISO_DIR:/iso:ro" \
     -v "$ANSWER_DIR:/answers:ro" \
     -v "$OUTPUT_DIR:/output" \
+    -e "PROXMOX_VERSION=$PROXMOX_VERSION" \
     debian:bookworm-slim \
     bash -c "
         set -euo pipefail
@@ -263,16 +271,18 @@ docker run --rm -i \
         echo '[INFO] Generating ISO images...'
 
         for answer_file in /answers/*.toml; do
-            node_name=\$(basename \$answer_file .toml)
-            output_iso=\"/output/proxmox-\${node_name}.iso\"
+            # Extract hostname from filename (already named with hostname)
+            hostname=\$(basename \$answer_file .toml)
+            # Build descriptive filename: HOSTNAME-pve-VERSION.iso
+            output_iso=\"/output/\${hostname}-pve-\${PROXMOX_VERSION}.iso\"
 
-            echo \"[INFO] Generating ISO for \$node_name...\"
+            echo \"[INFO] Generating ISO for \$hostname...\"
             proxmox-auto-install-assistant prepare-iso \
                 --fetch-from iso \
                 --answer-file \$answer_file \
                 --output \$output_iso \
                 /iso/${PROXMOX_ISO_NAME} || {
-                echo \"[ERROR] Failed to generate ISO for \$node_name\"
+                echo \"[ERROR] Failed to generate ISO for \$hostname\"
                 exit 1
             }
 
