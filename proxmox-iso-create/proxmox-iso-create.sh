@@ -300,6 +300,42 @@ if [ $? -eq 0 ]; then
         fi
     done
     log_info "Output directory: $OUTPUT_DIR"
+
+    # Show USB copy instructions only on macOS
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        echo ""
+        log_info "=== How to copy ISO to USB stick (macOS) ==="
+        echo ""
+        log_warn "Double-check the disk number! Wrong disk will destroy data!"
+        echo ""
+
+        # Try to detect external disk - only if exactly one is found
+        EXTERNAL_DISK_COUNT=$(diskutil list external 2>/dev/null | grep -c "^/dev/disk")
+
+        if [ "$EXTERNAL_DISK_COUNT" -eq 1 ]; then
+            EXTERNAL_DISK=$(diskutil list external 2>/dev/null | grep "^/dev/disk" | awk '{print $1}' | sed 's|/dev/||')
+            DISK_NAME="$EXTERNAL_DISK"
+            RDISK_NAME="r${EXTERNAL_DISK}"
+        else
+            DISK_NAME="diskN"
+            RDISK_NAME="rdiskN"
+        fi
+
+        echo "1. Unmount the USB stick:"
+        echo "   diskutil unmountDisk /dev/$DISK_NAME"
+        echo ""
+        echo "2. Copy the ISO to the USB stick with dd:"
+        for iso in "$OUTPUT_DIR"/*.iso; do
+            if [ -f "$iso" ]; then
+                ISO_NAME=$(basename "$iso")
+                echo "   sudo dd if=$OUTPUT_DIR/$ISO_NAME of=/dev/$RDISK_NAME bs=1m"
+            fi
+        done
+        echo ""
+        echo "3. Eject the USB stick when complete:"
+        echo "   diskutil eject /dev/$DISK_NAME"
+        echo ""
+    fi
 else
     log_error "Failed to generate ISO images"
     exit 1
