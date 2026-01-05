@@ -1,7 +1,8 @@
 # Proxmox Auto-Installer ISO Creator
 
-Automate the creation of Proxmox VE installation ISOs for a complete cluster. This tool generates bootable ISO images that automatically install and configure Proxmox VE with predefined settings from an embedded answer file. 
+Automate the creation of Proxmox VE installation ISOs for a multi-node cluster. This script generates bootable ISO images that automatically install and configure Proxmox VE with predefined settings from an embedded answer file. 
 Script runs on MacOs and uses [proxmox-auto-install-assistant](https://pve.proxmox.com/wiki/Automated_Installation).
+It wraps the official `proxmox-auto-install-assistant` tool with convenience features for multi-node deployments.
 
 ## Features
 
@@ -164,7 +165,7 @@ zfs.raid = "raidz"  # RAID-Z (similar to RAID-5)
 disk_list = ["/dev/sda", "/dev/sdb", "/dev/sdc"]  # Specific disks
 ```
 
-**Chnage to static IP Configuration**
+**Change to static IP Configuration**
 ```toml
 [network]
 source = "from-dhcp"
@@ -224,24 +225,6 @@ open -a Docker
 
 The script uses x86_64 emulation which is slower than native. This is normal and required because Proxmox packages are only available for amd64 architecture. ISO generation may take 5-10 minutes.
 
-## Advanced Usage
-
-
-### Different Filesystem Types
-
-```toml
-[disk-setup]
-filesystem = "ext4"  # Options: zfs, ext4, xfs, btrfs
-```
-
-## Technical Details
-
-- **Docker Platform:** Uses `--platform linux/amd64` for ARM64 compatibility
-- **Password Hashing:** SHA-512 via `mkpasswd` from whois package
-- **ISO Embedding:** Uses `proxmox-auto-install-assistant prepare-iso --fetch-from iso`
-- **Validation:** Runs `proxmox-auto-install-assistant validate-answer` before building
-- **Version Detection:** Parses HTML directory listing with grep and version sort
-
 ## Contributing
 
 Issues and pull requests are welcome! Please test any changes on both Intel and Apple Silicon Macs if possible.
@@ -258,7 +241,7 @@ See [LICENSE](../LICENSE) file in the repository root.
 
 ## Credits
 
-This tool automates the Proxmox VE automated installation feature introduced in Proxmox VE 8.1+. It wraps the official `proxmox-auto-install-assistant` tool with convenience features for multi-node deployments.
+This tool automates the Proxmox VE automated installation feature introduced in Proxmox VE 8.1+. 
 
 ---
 
