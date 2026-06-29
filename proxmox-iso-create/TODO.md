@@ -8,6 +8,8 @@ This file tracks potential improvements, features, and known issues for the Prox
 - [x] Add hint in the end how to dd copy the ISO file to the USB stick, do this for macos specificaly and print he complete dd command.
 - [x] Improve readme to explain "installation" and copy to USB
 - [ ] If the template contains static IP, increase last IP number for each ISO created.
+- [ ] Check ISO checksum, also to prevent parital download.
+- [ ] Only print one dd copy command,
 
 ## Lower priority
 

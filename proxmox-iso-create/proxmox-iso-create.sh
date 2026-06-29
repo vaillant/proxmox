@@ -26,8 +26,8 @@ DEFAULT_ANSWER_TEMPLATE=\
 '[global]
 keyboard = "en-us"
 country = "at"
-fqdn = "proxmox-pc-$N$.home"
-mailto = "mail@no.invalid"
+fqdn = "proxmox-pc-$N$.svaillant.com"
+mailto = "stefan.vaillant@gmail.com"
 timezone = "Europe/Vienna"
 root-password-hashed = "$PASSWD$"
 
@@ -328,7 +328,7 @@ if [ $? -eq 0 ]; then
         for iso in "$OUTPUT_DIR"/*.iso; do
             if [ -f "$iso" ]; then
                 ISO_NAME=$(basename "$iso")
-                echo "   sudo dd if=$OUTPUT_DIR/$ISO_NAME of=/dev/$RDISK_NAME bs=1m"
+                echo "   sudo dd if=$OUTPUT_DIR/$ISO_NAME of=/dev/$RDISK_NAME bs=1m status=progress"
             fi
         done
         echo ""
